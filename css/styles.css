@@ -1,0 +1,475 @@
+/**
+ * ColegioCraft 3D - Estilos Minecraft Retro Clásico
+ * GUI de piedra, madera de roble, hotbar auténtica y tipografía arcade.
+ */
+
+@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Fredoka:wght@400;500;600;700&display=swap');
+
+:root {
+    --mc-stone-bg: #4a4a4a;
+    --mc-stone-light: #8a8a8a;
+    --mc-stone-dark: #2a2a2a;
+    --mc-gui-bg: #c6c6c6;
+    --mc-gui-border-light: #ffffff;
+    --mc-gui-border-dark: #555555;
+    --mc-slot-bg: #8b8b8b;
+    --mc-slot-inset: #373737;
+    --mc-gold: #f59e0b;
+    --mc-green: #22c55e;
+    --mc-text-shadow: 2px 2px 0px #1a1a1a;
+}
+
+* {
+    box-sizing: border-box;
+    user-select: none;
+    -webkit-user-select: none;
+    image-rendering: pixelated;
+}
+
+body, html {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    font-family: 'Fredoka', 'Press Start 2P', sans-serif;
+    background-color: #0d1117;
+    color: #ffffff;
+}
+
+.pixel-font {
+    font-family: 'Press Start 2P', monospace;
+    letter-spacing: -0.5px;
+}
+
+#game-canvas {
+    display: block;
+    width: 100%;
+    height: 100%;
+    cursor: crosshair;
+}
+
+/* ==========================================================================
+   MINECRAFT CLASSIC RETRO GUI PANELS & DIALOGS
+   ========================================================================== */
+
+.mc-dialog-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.75);
+    backdrop-filter: blur(4px);
+    z-index: 50;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+}
+
+.mc-panel {
+    background-color: #c6c6c6;
+    border: 4px solid #000000;
+    box-shadow: 
+        inset 4px 4px 0px #ffffff,
+        inset -4px -4px 0px #555555,
+        0 16px 40px rgba(0, 0, 0, 0.85);
+    border-radius: 4px;
+    position: relative;
+    color: #2b2b2b;
+}
+
+.mc-panel-dark {
+    background-color: #2b2b2b;
+    border: 4px solid #000000;
+    box-shadow: 
+        inset 4px 4px 0px #555555,
+        inset -4px -4px 0px #151515,
+        0 16px 40px rgba(0, 0, 0, 0.9);
+    border-radius: 4px;
+    color: #f1f5f9;
+}
+
+.mc-parchment {
+    background-color: #fbf0d9;
+    border: 3px solid #8b5a2b;
+    box-shadow: inset 2px 2px 0px #fff7e6, inset -2px -2px 0px #6b4423;
+    border-radius: 4px;
+    color: #2b1f13;
+}
+
+/* Encabezado de madera de roble */
+.mc-header-wood {
+    background: #855b32;
+    border: 3px solid #4a2f13;
+    box-shadow: inset 2px 2px 0px #ad7d4e, inset -2px -2px 0px #382008;
+    color: #fff9ea;
+}
+
+/* ==========================================================================
+   BOTONES CLÁSICOS MINECRAFT
+   ========================================================================== */
+
+.mc-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    background-color: #727272;
+    background-image: linear-gradient(to bottom, #8e8e8e 0%, #727272 50%, #5d5d5d 100%);
+    border: 2px solid #000000;
+    box-shadow: 
+        inset 2px 2px 0px #ffffff,
+        inset -2px -2px 0px #373737,
+        0 3px 0px #1a1a1a;
+    color: #ffffff;
+    font-weight: 700;
+    cursor: pointer;
+    text-shadow: 1px 1px 0px #1f1f1f;
+    transition: all 0.08s ease;
+    border-radius: 2px;
+}
+
+.mc-btn:hover {
+    background-color: #8c8c8c;
+    background-image: linear-gradient(to bottom, #a5a5a5 0%, #8c8c8c 50%, #707070 100%);
+    box-shadow: 
+        inset 2px 2px 0px #ffffff,
+        inset -2px -2px 0px #404040,
+        0 3px 0px #2a2a2a;
+    color: #ffffa0;
+}
+
+.mc-btn:active {
+    transform: translateY(2px);
+    background-image: linear-gradient(to bottom, #4a4a4a 0%, #555555 50%, #404040 100%);
+    box-shadow: 
+        inset 2px 2px 0px #222222,
+        inset -2px -2px 0px #666666,
+        0 1px 0px #000000;
+}
+
+/* Variantes de botones temáticos */
+.mc-btn-gold {
+    background-image: linear-gradient(to bottom, #fbbf24 0%, #d97706 50%, #b45309 100%);
+    box-shadow: inset 2px 2px 0px #fef08a, inset -2px -2px 0px #78350f, 0 3px 0px #451a03;
+    color: #1a0f02;
+    text-shadow: 1px 1px 0px #fef9c3;
+}
+.mc-btn-gold:hover {
+    background-image: linear-gradient(to bottom, #fde047 0%, #eab308 50%, #ca8a04 100%);
+    color: #000000;
+}
+
+.mc-btn-green {
+    background-image: linear-gradient(to bottom, #4ade80 0%, #16a34a 50%, #15803d 100%);
+    box-shadow: inset 2px 2px 0px #bbf7d0, inset -2px -2px 0px #14532d, 0 3px 0px #052e16;
+    color: #ffffff;
+    text-shadow: 1px 1px 0px #052e16;
+}
+
+.mc-btn-red {
+    background-image: linear-gradient(to bottom, #f87171 0%, #dc2626 50%, #b91c1c 100%);
+    box-shadow: inset 2px 2px 0px #fecaca, inset -2px -2px 0px #7f1d1d, 0 3px 0px #450a0a;
+    color: #ffffff;
+    text-shadow: 1px 1px 0px #450a0a;
+}
+
+.mc-btn-blue {
+    background-image: linear-gradient(to bottom, #60a5fa 0%, #2563eb 50%, #1d4ed8 100%);
+    box-shadow: inset 2px 2px 0px #bfdbfe, inset -2px -2px 0px #1e3a8a, 0 3px 0px #172554;
+    color: #ffffff;
+    text-shadow: 1px 1px 0px #172554;
+}
+
+.mc-btn-purple {
+    background-image: linear-gradient(to bottom, #c084fc 0%, #9333ea 50%, #7e22ce 100%);
+    box-shadow: inset 2px 2px 0px #f3e8ff, inset -2px -2px 0px #581c87, 0 3px 0px #3b0764;
+    color: #ffffff;
+    text-shadow: 1px 1px 0px #3b0764;
+}
+
+/* ==========================================================================
+   MINECRAFT HOTBAR (BARRA DE INVENTARIO INFERIOR)
+   ========================================================================== */
+
+.mc-hotbar-container {
+    background: #8f8f8f;
+    border: 3px solid #000000;
+    box-shadow: 
+        inset 3px 3px 0px #dbdbdb,
+        inset -3px -3px 0px #4a4a4a,
+        0 8px 24px rgba(0, 0, 0, 0.7);
+    padding: 4px;
+    border-radius: 4px;
+    display: flex;
+    gap: 4px;
+}
+
+.hotbar-slot {
+    width: 48px;
+    height: 48px;
+    background: #8b8b8b;
+    border: 2px solid #000000;
+    box-shadow: 
+        inset 3px 3px 0px #373737,
+        inset -3px -3px 0px #ffffff;
+    position: relative;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.1s ease;
+}
+
+.hotbar-slot:hover {
+    background: #9d9d9d;
+}
+
+.hotbar-slot.active {
+    outline: 3px solid #ffffff;
+    outline-offset: -1px;
+    box-shadow: 
+        inset 3px 3px 0px #555555,
+        inset -3px -3px 0px #ffffff,
+        0 0 14px rgba(255, 255, 255, 0.9);
+    transform: scale(1.08) translateY(-4px);
+    z-index: 10;
+}
+
+.hotbar-slot-key {
+    position: absolute;
+    top: 2px;
+    left: 4px;
+    font-size: 9px;
+    font-weight: 800;
+    color: #ffffff;
+    text-shadow: 1px 1px 0px #000000;
+}
+
+/* ==========================================================================
+   BRÚJULA / COMPASS HUD RETRO (Arriba a la derecha)
+   ========================================================================== */
+
+.mc-compass-hud {
+    background: #2b2b2b;
+    border: 3px solid #000000;
+    box-shadow: 
+        inset 2px 2px 0px #555555,
+        inset -2px -2px 0px #151515,
+        0 6px 16px rgba(0,0,0,0.6);
+    border-radius: 6px;
+    padding: 6px 10px;
+    color: #ffffff;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 11px;
+    font-weight: 700;
+}
+
+.compass-dial {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: #111827;
+    border: 2px solid #f59e0b;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: inset 0 0 6px rgba(0,0,0,0.8);
+}
+
+.compass-needle {
+    width: 2px;
+    height: 22px;
+    position: absolute;
+    transition: transform 0.1s linear;
+}
+.compass-needle::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -2px;
+    border-left: 3px solid transparent;
+    border-right: 3px solid transparent;
+    border-bottom: 9px solid #ef4444;
+}
+.compass-needle::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: -2px;
+    border-left: 3px solid transparent;
+    border-right: 3px solid transparent;
+    border-top: 9px solid #e2e8f0;
+}
+
+/* ==========================================================================
+   CORAZONES & BARRA DE EXPERIENCIA (ESTILO MINECRAFT)
+   ========================================================================== */
+
+.mc-hearts-row {
+    display: flex;
+    gap: 3px;
+    align-items: center;
+}
+
+.mc-heart {
+    width: 14px;
+    height: 14px;
+    background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23ef4444'%3E%3Cpath d='M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z'/%3E%3C/svg%3E") no-repeat center center;
+    filter: drop-shadow(1px 1px 0px #000000);
+}
+
+.mc-xp-bar {
+    width: 130px;
+    height: 7px;
+    background: #1e293b;
+    border: 1px solid #000000;
+    border-radius: 2px;
+    position: relative;
+    overflow: hidden;
+    box-shadow: inset 1px 1px 0px #0f172a;
+}
+
+.mc-xp-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #22c55e, #86efac);
+    box-shadow: 0 0 8px rgba(34, 197, 94, 0.8);
+    transition: width 0.3s ease;
+}
+
+/* ==========================================================================
+   CROSSHAIR (MIRA CENTRAL MINECRAFT)
+   ========================================================================== */
+
+#crosshair {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+    z-index: 30;
+    mix-blend-mode: difference;
+}
+
+.mc-crosshair-box {
+    width: 16px;
+    height: 16px;
+    position: relative;
+}
+
+.mc-crosshair-box::before {
+    content: '';
+    position: absolute;
+    top: 7px;
+    left: 0;
+    width: 16px;
+    height: 2px;
+    background: #ffffff;
+}
+
+.mc-crosshair-box::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 7px;
+    width: 2px;
+    height: 16px;
+    background: #ffffff;
+}
+
+/* ==========================================================================
+   ETIQUETAS FLOTANTES 3D (NAMEPLATES / PUERTAS / GUARDIANES)
+   ========================================================================== */
+
+.npc-label {
+    position: absolute;
+    transform: translate(-50%, -100%);
+    pointer-events: auto;
+    cursor: pointer;
+    transition: transform 0.15s ease;
+    z-index: 10;
+}
+
+.npc-label:hover {
+    transform: translate(-50%, -106%) scale(1.05);
+}
+
+.mc-nameplate {
+    background: rgba(0, 0, 0, 0.85);
+    border: 2px solid #555555;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.7);
+    padding: 4px 8px;
+    border-radius: 4px;
+    text-align: center;
+}
+
+.mc-nameplate-portal {
+    background: rgba(17, 24, 39, 0.92);
+    border: 2px solid #f59e0b;
+    box-shadow: 0 6px 20px rgba(245, 158, 11, 0.4);
+    padding: 6px 12px;
+    border-radius: 6px;
+    text-align: center;
+}
+
+/* ==========================================================================
+   TOOLTIPS ESTILO MINECRAFT (Bordes morados retro)
+   ========================================================================== */
+
+.mc-tooltip {
+    background: #11091d;
+    border: 2px solid #280b54;
+    box-shadow: 
+        inset 1px 1px 0px #4d1899,
+        inset -1px -1px 0px #1c063b,
+        0 8px 20px rgba(0, 0, 0, 0.8);
+    border-radius: 4px;
+    padding: 6px 10px;
+    color: #ffffff;
+    font-size: 11px;
+}
+
+/* ==========================================================================
+   SCROLLBAR RETRO
+   ========================================================================== */
+
+::-webkit-scrollbar {
+    width: 10px;
+}
+::-webkit-scrollbar-track {
+    background: #2b2b2b;
+    border: 1px solid #1a1a1a;
+}
+::-webkit-scrollbar-thumb {
+    background: #6e6e6e;
+    border: 2px solid #2b2b2b;
+    box-shadow: inset 1px 1px 0px #9e9e9e, inset -1px -1px 0px #404040;
+}
+::-webkit-scrollbar-thumb:hover {
+    background: #858585;
+}
+
+/* ==========================================================================
+   ANIMACIONES
+   ========================================================================== */
+
+@keyframes mcPulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.04); }
+}
+
+.pulse-slow {
+    animation: mcPulse 2.5s ease-in-out infinite;
+}
+
+@keyframes floatBob {
+    0%, 100% { transform: translateY(0px); }
+    50% { transform: translateY(-6px); }
+}
+
+.float-bob {
+    animation: floatBob 2s ease-in-out infinite;
+}

@@ -1,0 +1,616 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>ColegioCraft 3D - Mundos de Aprendizaje (2° Básico)</title>
+
+    <!-- Tailwind CSS (Utilidades) -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Three.js (Motor Gráfico Voxel) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+
+    <!-- Tone.js (Audio Acústico y BGM) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.js"></script>
+
+    <!-- Font Awesome (Íconos) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Google Fonts: Fredoka y Press Start 2P -->
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Press+Start+2P&display=swap" rel="stylesheet">
+
+    <!-- Hoja de Estilos Minecraft Retro -->
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body class="relative select-none overflow-hidden">
+
+    <!-- Lienzo 3D Voxel -->
+    <canvas id="game-canvas"></canvas>
+
+    <!-- Contenedor de Etiquetas Flotantes 3D -->
+    <div id="labels-container" class="absolute inset-0 pointer-events-none overflow-hidden z-10"></div>
+
+    <!-- Mira Central estilo Minecraft -->
+    <div id="crosshair">
+        <div class="mc-crosshair-box"></div>
+    </div>
+
+    <!-- =================================================================== -->
+    <!-- HUD SUPERIOR: ESTILO MINECRAFT CLÁSICO RETRO                        -->
+    <!-- =================================================================== -->
+    <header class="fixed top-0 left-0 right-0 p-2 sm:p-3 flex flex-wrap items-center justify-between gap-2 z-20 pointer-events-none">
+        
+        <!-- Logo, Nivel y Medallas -->
+        <div class="flex items-center gap-2.5 mc-panel-dark px-3 py-2 rounded pointer-events-auto shadow-2xl">
+            <div class="w-10 h-10 rounded bg-amber-500 border-2 border-black flex items-center justify-center text-2xl shadow">
+                🏰
+            </div>
+            <div>
+                <div class="flex items-center gap-2">
+                    <span class="pixel-font text-xs sm:text-sm text-amber-300 font-extrabold tracking-tight">ColegioCraft</span>
+                    <span class="pixel-font text-[9px] bg-amber-400 text-slate-950 px-2 py-0.5 rounded font-extrabold">NIVEL 2°</span>
+                </div>
+                <!-- Barra de experiencia y corazones de vida -->
+                <div class="flex items-center gap-3 mt-1">
+                    <div class="mc-hearts-row">
+                        <div class="mc-heart"></div>
+                        <div class="mc-heart"></div>
+                        <div class="mc-heart"></div>
+                        <div class="mc-heart"></div>
+                        <div class="mc-heart"></div>
+                    </div>
+                    <div class="mc-xp-bar" title="Progreso de Aprendizaje">
+                        <div id="hud-xp-fill" class="mc-xp-fill" style="width: 0%;"></div>
+                    </div>
+                </div>
+                <div class="flex items-center gap-3 text-xs mt-1">
+                    <span id="hud-medals" class="font-extrabold text-emerald-400"><i class="fa-solid fa-medal mr-1"></i>Medallas: 0/20</span>
+                    <span id="hud-stars" class="font-extrabold text-yellow-300"><i class="fa-solid fa-star mr-1"></i>Puntos: 0</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Botones de Viaje Rápido: LOBBY + 4 MUNDOS -->
+        <div class="flex flex-wrap items-center gap-1.5 mc-panel-dark p-1.5 rounded pointer-events-auto shadow-xl">
+            <button onclick="enterWorld('lobby')" id="nav-lobby" class="mc-btn mc-btn-gold pixel-font text-[10px] px-2.5 py-2">
+                <span>🚪</span> <span>LOBBY</span>
+            </button>
+            <button onclick="enterWorld('historia')" id="nav-historia" class="mc-btn pixel-font text-[10px] px-2.5 py-2">
+                <span>🏺</span> <span>1. HISTORIA</span>
+            </button>
+            <button onclick="enterWorld('ciencias')" id="nav-ciencias" class="mc-btn mc-btn-green pixel-font text-[10px] px-2.5 py-2">
+                <span>🔬</span> <span>2. CIENCIAS</span>
+            </button>
+            <button onclick="enterWorld('lenguaje')" id="nav-lenguaje" class="mc-btn mc-btn-purple pixel-font text-[10px] px-2.5 py-2">
+                <span>📚</span> <span>3. LENGUAJE</span>
+            </button>
+            <button onclick="enterWorld('matematicas')" id="nav-matematicas" class="mc-btn mc-btn-blue pixel-font text-[10px] px-2.5 py-2">
+                <span>🔢</span> <span>4. MATEMÁTICAS</span>
+            </button>
+        </div>
+
+        <!-- Herramientas Académicas y Brújula -->
+        <div class="flex items-center gap-1.5 pointer-events-auto">
+            <!-- Brújula / Radar retro -->
+            <div class="mc-compass-hud hidden md:flex" title="Brújula de Navegación">
+                <div class="compass-dial">
+                    <div id="compass-needle" class="compass-needle"></div>
+                </div>
+                <div>
+                    <div class="pixel-font text-[9px] text-amber-300 flex items-center gap-1">
+                        <span>🧭 RUMBO:</span> <span id="compass-direction">N</span>
+                    </div>
+                    <div id="compass-coords" class="text-[9px] text-slate-300">XYZ: 0, 0, 6</div>
+                </div>
+            </div>
+
+            <!-- Música BGM ambiental -->
+            <button onclick="toggleAmbientBgm()" id="btn-bgm-toggle" class="mc-btn px-2.5 py-2 text-xs" title="Música ambiental relajante">
+                <i class="fa-solid fa-music"></i>
+            </button>
+
+            <!-- Voz Chilena natural -->
+            <button onclick="toggleVoiceMute()" id="btn-voice-toggle" class="mc-btn mc-btn-gold px-2.5 py-2 text-xs" title="Activar o silenciar voz chilena">
+                <i id="voice-toggle-icon" class="fa-solid fa-volume-high"></i>
+                <span id="voice-status-badge" class="hidden xl:inline text-[11px] font-bold ml-1">Voz 🇨🇱</span>
+            </button>
+
+            <!-- Mini-Juegos Arcade -->
+            <button onclick="openClassifierModal()" class="mc-btn mc-btn-purple px-2.5 py-2 text-xs" title="Arcade de Mini-Juegos">
+                <i class="fa-solid fa-gamepad mr-1"></i>
+                <span class="pixel-font text-[9px]">JUEGOS (17)</span>
+            </button>
+
+            <!-- Modo Prueba -->
+            <button onclick="openQuizModal()" class="mc-btn mc-btn-red px-2.5 py-2 text-xs" title="Pruebas y Tickets de Salida">
+                <i class="fa-solid fa-clipboard-check mr-1"></i>
+                <span class="pixel-font text-[9px]">PRUEBA</span>
+            </button>
+
+            <!-- Cuadernos de Estudio -->
+            <button onclick="openNotebookModal()" class="mc-btn mc-btn-blue px-2.5 py-2 text-xs" title="Ver Cuadernos de Estudio">
+                <i class="fa-solid fa-book-open mr-1"></i>
+                <span class="pixel-font text-[9px] hidden sm:inline">LIBRO</span>
+            </button>
+        </div>
+    </header>
+
+    <!-- =================================================================== -->
+    <!-- INDICADOR DE ZONA Y BOTÓN CONTEXTUAL                              -->
+    <!-- =================================================================== -->
+    <div class="fixed top-20 sm:top-24 left-1/2 -translate-x-1/2 z-10 pointer-events-none flex flex-col items-center w-full max-w-xl px-2">
+        <div id="zone-indicator" class="mc-panel-dark text-white px-4 py-1.5 rounded border border-white/20 text-xs sm:text-sm font-bold shadow-2xl flex items-center gap-2 text-center">
+            <span id="zone-emoji">🏰</span>
+            <span id="zone-title" class="leading-tight">LOBBY CENTRAL: Acércate o haz clic en una de las 4 Puertas para entrar a su Mundo</span>
+        </div>
+
+        <button id="nearby-prompt" onclick="interactWithNearestTarget()" class="hidden mt-2 pointer-events-auto mc-btn mc-btn-gold pixel-font text-xs sm:text-sm px-6 py-2.5 rounded shadow-2xl animate-bounce flex items-center gap-2">
+            <i class="fa-solid fa-door-open text-base"></i>
+            <span id="nearby-prompt-text">INTERACTUAR</span>
+        </button>
+    </div>
+
+    <!-- Notificación Toast Educativa -->
+    <div id="toast-msg" class="fixed top-36 left-1/2 -translate-x-1/2 z-30 pointer-events-none transition-all duration-300 opacity-0 translate-y-2">
+        <div class="mc-tooltip flex items-center gap-3 max-w-md text-center">
+            <span id="toast-icon" class="text-2xl">✨</span>
+            <p id="toast-text" class="text-xs sm:text-sm font-semibold"></p>
+        </div>
+    </div>
+
+    <!-- =================================================================== -->
+    <!-- CONTROLES TÁCTILES MÓVILES (Izquierda: D-Pad Retro)                 -->
+    <!-- =================================================================== -->
+    <div class="fixed bottom-20 sm:bottom-6 left-3 z-20 flex flex-col items-center gap-1 pointer-events-auto opacity-90 hover:opacity-100">
+        <div class="pixel-font text-[9px] text-amber-300 bg-black/80 px-2 py-0.5 rounded mb-0.5">WASD / FLECHAS</div>
+        <button id="btn-up" class="mc-btn w-12 h-12 rounded text-lg active:bg-amber-400">
+            <i class="fa-solid fa-arrow-up"></i>
+        </button>
+        <div class="flex gap-1">
+            <button id="btn-left" class="mc-btn w-12 h-12 rounded text-lg active:bg-amber-400">
+                <i class="fa-solid fa-arrow-left"></i>
+            </button>
+            <button id="btn-down" class="mc-btn w-12 h-12 rounded text-lg active:bg-amber-400">
+                <i class="fa-solid fa-arrow-down"></i>
+            </button>
+            <button id="btn-right" class="mc-btn w-12 h-12 rounded text-lg active:bg-amber-400">
+                <i class="fa-solid fa-arrow-right"></i>
+            </button>
+        </div>
+    </div>
+
+    <!-- Botones de Acción Derecha (Saltar, Poner Bloque, Romper Bloque) -->
+    <div class="fixed bottom-20 sm:bottom-6 right-3 z-20 flex flex-col items-end gap-2 pointer-events-auto">
+        <div class="flex gap-1.5">
+            <button onclick="placeVoxelBlock()" class="mc-btn mc-btn-green px-3 py-2.5 rounded text-xs sm:text-sm flex items-center gap-1.5 shadow-lg" title="Construir frente a ti (Tecla E)">
+                <i class="fa-solid fa-cube"></i> <span class="pixel-font text-[9px]">PONER (E)</span>
+            </button>
+            <button onclick="removeVoxelBlock()" class="mc-btn mc-btn-red px-3 py-2.5 rounded text-xs sm:text-sm flex items-center gap-1.5 shadow-lg" title="Romper bloque (Tecla Q)">
+                <i class="fa-solid fa-hammer"></i> <span class="pixel-font text-[9px]">ROMPER (Q)</span>
+            </button>
+        </div>
+        <button id="btn-jump" class="mc-btn mc-btn-gold px-5 py-2.5 rounded text-xs sm:text-sm flex items-center gap-1.5 shadow-lg">
+            <i class="fa-solid fa-person-arrow-up-from-line"></i> <span class="pixel-font text-[10px]">SALTAR (ESPACIO)</span>
+        </button>
+    </div>
+
+    <!-- =================================================================== -->
+    <!-- MINECRAFT CLASSIC RETRO HOTBAR (Abajo al centro)                   -->
+    <!-- =================================================================== -->
+    <div class="fixed bottom-2 left-1/2 -translate-x-1/2 z-20 pointer-events-auto flex flex-col items-center">
+        <div id="block-info-banner" class="mc-tooltip mb-1 text-[11px] sm:text-xs font-bold text-center">
+            🪨 Piedra y Adobe: Material firme para construir casas y caminos
+        </div>
+        <div class="mc-hotbar-container">
+            <div onclick="selectBlock(0)" id="slot-0" class="hotbar-slot active">
+                <span class="hotbar-slot-key">1</span>
+                <span class="text-xl">🪨</span>
+                <span class="pixel-font text-[7px] text-slate-200 mt-0.5">Piedra</span>
+            </div>
+            <div onclick="selectBlock(1)" id="slot-1" class="hotbar-slot">
+                <span class="hotbar-slot-key">2</span>
+                <span class="text-xl">🌿</span>
+                <span class="pixel-font text-[7px] text-slate-200 mt-0.5">Pasto</span>
+            </div>
+            <div onclick="selectBlock(2)" id="slot-2" class="hotbar-slot">
+                <span class="hotbar-slot-key">3</span>
+                <span class="text-xl">💧</span>
+                <span class="pixel-font text-[7px] text-slate-200 mt-0.5">Agua</span>
+            </div>
+            <div onclick="selectBlock(3)" id="slot-3" class="hotbar-slot">
+                <span class="hotbar-slot-key">4</span>
+                <span class="text-xl">❤️</span>
+                <span class="pixel-font text-[7px] text-slate-200 mt-0.5">Vital</span>
+            </div>
+            <div onclick="selectBlock(4)" id="slot-4" class="hotbar-slot">
+                <span class="hotbar-slot-key">5</span>
+                <span class="text-xl">📖</span>
+                <span class="pixel-font text-[7px] text-slate-200 mt-0.5">Letras</span>
+            </div>
+            <div onclick="selectBlock(5)" id="slot-5" class="hotbar-slot">
+                <span class="hotbar-slot-key">6</span>
+                <span class="text-xl">✨</span>
+                <span class="pixel-font text-[7px] text-slate-200 mt-0.5">Luz</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- =================================================================== -->
+    <!-- MODAL 1: BIENVENIDA AL LOBBY DE LAS 4 PUERTAS                       -->
+    <!-- =================================================================== -->
+    <div id="welcome-modal" class="mc-dialog-overlay">
+        <div class="mc-panel max-w-3xl w-full p-5 sm:p-7 relative max-h-[92vh] overflow-y-auto">
+            <div class="flex items-center gap-3 mb-4 border-b-2 border-stone-600 pb-3">
+                <div class="w-14 h-14 rounded bg-amber-500 border-3 border-black flex items-center justify-center text-3xl shadow shrink-0">
+                    🏰
+                </div>
+                <div>
+                    <span class="pixel-font text-[10px] bg-amber-300 text-slate-950 font-extrabold px-2.5 py-0.5 rounded border border-black">AVENTURA 3D • 2° BÁSICO</span>
+                    <h1 class="pixel-font text-base sm:text-xl font-extrabold text-slate-900 mt-1 leading-snug">ColegioCraft 3D: Los 4 Mundos</h1>
+                </div>
+            </div>
+
+            <p class="text-sm sm:text-base text-slate-800 mb-4 leading-relaxed font-semibold">
+                ¡Bienvenido explorador! Estás en el <strong>Lobby Central</strong> estilo Minecraft. Camina hacia cualquiera de las <strong>4 Puertas Mágicas</strong> para aprender los contenidos de tus cuadernos de <strong>2° Básico</strong>, jugar mini-juegos y coleccionar medallas:
+            </p>
+
+            <!-- Las 4 Puertas Mágicas -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-5">
+                <div class="mc-parchment p-3 border-2 border-amber-600 rounded">
+                    <div class="flex items-center gap-2 font-extrabold text-amber-950 text-sm mb-1">
+                        <span>🏺</span> <span class="pixel-font text-[11px]">PUERTA 1: HISTORIA</span>
+                    </div>
+                    <p class="text-xs text-amber-950 leading-snug font-medium">
+                        Zonas de Chile, Pueblos Originarios, <strong>Nómadas</strong> y <strong>Sedentarios</strong>, viviendas (Uta, Ruka, Dalca, Cono Selk'nam) y su legado actual.
+                    </p>
+                </div>
+                <div class="mc-parchment p-3 border-2 border-emerald-600 rounded">
+                    <div class="flex items-center gap-2 font-extrabold text-emerald-950 text-sm mb-1">
+                        <span>🔬</span> <span class="pixel-font text-[11px]">PUERTA 2: CIENCIAS</span>
+                    </div>
+                    <p class="text-xs text-emerald-950 leading-snug font-medium">
+                        Órganos del cuerpo (<strong>corazón, pulmones, estómago, esqueleto</strong>), ejercicio, animales <strong>vertebrados e invertebrados</strong> (artrópodos) y el agua.
+                    </p>
+                </div>
+                <div class="mc-parchment p-3 border-2 border-fuchsia-600 rounded">
+                    <div class="flex items-center gap-2 font-extrabold text-fuchsia-950 text-sm mb-1">
+                        <span>📚</span> <span class="pixel-font text-[11px]">PUERTA 3: LENGUAJE</span>
+                    </div>
+                    <p class="text-xs text-fuchsia-950 leading-snug font-medium">
+                        El <strong>Cómic</strong> (viñetas, globos y onomatopeyas), <strong>información explícita</strong>, vocabulario contextual y familias de palabras.
+                    </p>
+                </div>
+                <div class="mc-parchment p-3 border-2 border-sky-600 rounded">
+                    <div class="flex items-center gap-2 font-extrabold text-sky-950 text-sm mb-1">
+                        <span>🔢</span> <span class="pixel-font text-[11px]">PUERTA 4: MATEMÁTICAS</span>
+                    </div>
+                    <p class="text-xs text-sky-950 leading-snug font-medium">
+                        Torres de <strong>Decenas</strong> y unidades, cálculo mental ágil, sumas, restas y cuerpos geométricos en 3D como el cubo.
+                    </p>
+                </div>
+            </div>
+
+            <div class="flex flex-wrap items-center justify-between gap-3 pt-2 border-t-2 border-stone-600">
+                <button onclick="speakWelcomeIntro()" class="mc-btn mc-btn-blue pixel-font text-xs px-4 py-3 rounded flex items-center gap-2">
+                    <i class="fa-solid fa-volume-high"></i>
+                    <span>ESCUCHAR VOZ CHILENA</span>
+                </button>
+                <button onclick="startGame()" class="mc-btn mc-btn-green pixel-font text-xs sm:text-sm px-8 py-3 rounded flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-play"></i>
+                    <span>¡ENTRAR AL LOBBY 3D!</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- =================================================================== -->
+    <!-- MODAL 2: DIÁLOGO CON ESTACIÓN / GUARDIÁN + PREGUNTA INTERACTIVA     -->
+    <!-- =================================================================== -->
+    <div id="npc-modal" class="mc-dialog-overlay hidden">
+        <div class="mc-panel max-w-xl w-full p-5 sm:p-6 relative max-h-[92vh] overflow-y-auto">
+            <button onclick="closeNpcModal()" class="absolute top-3 right-3 w-8 h-8 mc-btn mc-btn-red text-white font-bold flex items-center justify-center">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+
+            <!-- Cabecera de la Estación -->
+            <div class="flex items-center gap-3 mb-3 pr-8">
+                <div id="npc-emoji" class="w-16 h-16 rounded bg-amber-400 border-2 border-black flex items-center justify-center text-4xl shadow shrink-0">
+                    🦙
+                </div>
+                <div>
+                    <div class="flex flex-wrap items-center gap-1.5 mb-1">
+                        <span id="npc-zone-badge" class="pixel-font text-[9px] px-2 py-0.5 rounded bg-amber-200 text-amber-950 border border-amber-600 font-extrabold">MUNDO</span>
+                        <span id="npc-lifestyle-badge" class="pixel-font text-[9px] px-2 py-0.5 rounded bg-emerald-200 text-emerald-950 border border-emerald-600 font-extrabold">TEMA</span>
+                    </div>
+                    <h2 id="npc-name" class="pixel-font text-xs sm:text-sm font-extrabold text-slate-900">Estación de Aprendizaje</h2>
+                </div>
+            </div>
+
+            <!-- Botón de Voz para niños -->
+            <div class="flex items-center justify-between mc-parchment px-3 py-2 rounded mb-3">
+                <span class="text-xs font-bold text-amber-950"><i class="fa-solid fa-lightbulb text-amber-600 mr-1"></i>Contenido del Cuaderno</span>
+                <button onclick="speakCurrentNpc()" class="mc-btn mc-btn-blue text-[11px] font-bold px-3 py-1 rounded flex items-center gap-1.5">
+                    <i class="fa-solid fa-volume-high"></i> <span>Escuchar</span>
+                </button>
+            </div>
+
+            <!-- Historia y explicación principal -->
+            <p id="npc-story" class="text-xs sm:text-sm text-slate-900 mc-parchment p-3 rounded mb-3 leading-relaxed font-semibold"></p>
+
+            <!-- 3 Tarjetas de Datos Clave -->
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-2 mb-3 text-xs">
+                <div class="mc-parchment p-2.5 rounded">
+                    <div id="npc-box1-title" class="pixel-font text-[9px] text-orange-950 font-extrabold mb-1">DATO 1</div>
+                    <div id="npc-house" class="text-slate-800 font-medium"></div>
+                </div>
+                <div class="mc-parchment p-2.5 rounded">
+                    <div id="npc-box2-title" class="pixel-font text-[9px] text-emerald-950 font-extrabold mb-1">DATO 2</div>
+                    <div id="npc-food" class="text-slate-800 font-medium"></div>
+                </div>
+                <div class="mc-parchment p-2.5 rounded">
+                    <div id="npc-box3-title" class="pixel-font text-[9px] text-purple-950 font-extrabold mb-1">DATO 3</div>
+                    <div id="npc-skill" class="text-slate-800 font-medium"></div>
+                </div>
+            </div>
+
+            <!-- Botón Destacado para abrir Mini-Juego -->
+            <div class="mc-panel-dark p-3.5 rounded mb-3 border-2 border-amber-400 flex flex-wrap items-center justify-between gap-3">
+                <div class="flex items-center gap-2.5">
+                    <div id="npc-minigame-icon" class="w-11 h-11 rounded bg-amber-400 text-slate-950 flex items-center justify-center text-2xl font-extrabold shadow">
+                        🎮
+                    </div>
+                    <div>
+                        <span class="pixel-font text-[8px] bg-white/20 text-amber-200 px-2 py-0.5 rounded">MINI-JUEGO DE ESTA UNIDAD</span>
+                        <h4 id="npc-minigame-title" class="text-xs sm:text-sm font-extrabold text-white">Actividad Interactiva</h4>
+                    </div>
+                </div>
+                <button onclick="openUnitMinigameFromNpc()" class="mc-btn mc-btn-gold pixel-font text-[10px] px-3.5 py-2 rounded shrink-0">
+                    <i class="fa-solid fa-play mr-1"></i> ¡JUGAR!
+                </button>
+            </div>
+
+            <!-- Pregunta de Trivia para ganar Medalla -->
+            <div class="mc-panel-dark p-4 rounded border-2 border-amber-400">
+                <div class="flex items-center justify-between mb-2">
+                    <span class="pixel-font text-[9px] text-amber-300">TRIVIA POR LA MEDALLA</span>
+                    <span id="npc-medal-status" class="pixel-font text-[9px] bg-slate-800 px-2 py-0.5 rounded text-slate-300">Pendiente</span>
+                </div>
+                <p id="npc-question" class="text-xs sm:text-sm font-extrabold mb-3 text-white leading-relaxed"></p>
+                <div id="npc-options" class="flex flex-col gap-2"></div>
+                <div id="npc-feedback" class="mt-3 text-xs sm:text-sm font-bold hidden p-2.5 rounded"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- =================================================================== -->
+    <!-- MODAL 3: ARCADE DE 17 MINI-JUEGOS EDUCATIVOS                        -->
+    <!-- =================================================================== -->
+    <div id="classifier-modal" class="mc-dialog-overlay hidden">
+        <div class="mc-panel max-w-3xl w-full p-4 sm:p-6 relative max-h-[94vh] overflow-y-auto">
+            <button onclick="closeClassifierModal()" class="absolute top-3 right-3 w-8 h-8 mc-btn mc-btn-red text-white font-bold flex items-center justify-center">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+
+            <div class="flex flex-wrap items-center justify-between gap-2 mb-3 pr-8">
+                <div class="flex items-center gap-2.5">
+                    <span id="mg-header-emoji" class="text-3xl">🎮</span>
+                    <div>
+                        <span class="pixel-font text-[9px] text-purple-950 bg-purple-200 border border-purple-500 px-2 py-0.5 rounded">ARCADE ACADÉMICO • 17 MINI-JUEGOS</span>
+                        <h2 id="mg-header-title" class="pixel-font text-xs sm:text-sm font-extrabold text-slate-900 mt-0.5">Mini-Juegos por Unidad</h2>
+                    </div>
+                </div>
+                <button onclick="speakCurrentMinigameInstructions()" class="mc-btn mc-btn-blue text-[11px] font-bold px-3 py-1.5 rounded flex items-center gap-1.5 shrink-0">
+                    <i class="fa-solid fa-volume-high"></i> <span>Escuchar</span>
+                </button>
+            </div>
+
+            <!-- Pestañas de Asignaturas -->
+            <div class="flex flex-wrap gap-1.5 mb-2.5">
+                <button onclick="selectMinigameSubject('historia')" id="tab-mg-historia" class="mc-btn mc-btn-gold pixel-font text-[10px] px-3 py-1.5 rounded">🏺 1. HISTORIA</button>
+                <button onclick="selectMinigameSubject('ciencias')" id="tab-mg-ciencias" class="mc-btn pixel-font text-[10px] px-3 py-1.5 rounded">🔬 2. CIENCIAS</button>
+                <button onclick="selectMinigameSubject('lenguaje')" id="tab-mg-lenguaje" class="mc-btn pixel-font text-[10px] px-3 py-1.5 rounded">📚 3. LENGUAJE</button>
+                <button onclick="selectMinigameSubject('matematicas')" id="tab-mg-matematicas" class="mc-btn pixel-font text-[10px] px-3 py-1.5 rounded">🔢 4. MATEMÁTICAS</button>
+            </div>
+
+            <!-- Selector de Unidad dentro de la Asignatura -->
+            <div id="mg-unit-selector" class="flex flex-wrap gap-1.5 mb-3 pb-2.5 border-b-2 border-stone-500"></div>
+
+            <!-- Barra de Instrucciones de la Mecánica -->
+            <div id="mg-instructions-bar" class="mc-parchment px-3 py-2 mb-3 flex items-center justify-between gap-2 text-xs font-bold text-amber-950">
+                <span id="mg-instructions-text">Selecciona una unidad para jugar su desafío.</span>
+                <span id="mg-type-pill" class="pixel-font text-[9px] bg-amber-400 text-slate-950 px-2 py-0.5 rounded shrink-0">MECÁNICA</span>
+            </div>
+
+            <!-- Escenario dinámico de los 17 Mini-Juegos -->
+            <div id="mg-stage" class="mc-panel-dark p-4 sm:p-5 rounded min-h-[270px] flex flex-col justify-center"></div>
+
+            <!-- Retroalimentación del Mini-Juego -->
+            <div id="mg-feedback" class="hidden mt-3 p-3 rounded text-center font-extrabold text-xs sm:text-sm"></div>
+
+            <div class="flex flex-wrap justify-between items-center gap-2 text-xs pt-3 mt-3 border-t-2 border-stone-500">
+                <span id="mg-score-display" class="pixel-font text-[10px] text-emerald-950 font-extrabold">🏅 PUNTOS DE JUEGO: 0</span>
+                <div class="flex gap-2">
+                    <button onclick="resetCurrentMinigame()" class="mc-btn px-3 py-1.5 text-xs font-bold rounded">
+                        <i class="fa-solid fa-rotate-right mr-1"></i> Reiniciar
+                    </button>
+                    <button onclick="nextUnitMinigame()" class="mc-btn mc-btn-gold pixel-font text-[10px] px-3 py-1.5 rounded">
+                        SIGUIENTE JUEGO <i class="fa-solid fa-arrow-right ml-1"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- =================================================================== -->
+    <!-- MODAL 4: MODO PRUEBA Y TICKETS DE SALIDA                            -->
+    <!-- =================================================================== -->
+    <div id="quiz-modal" class="mc-dialog-overlay hidden">
+        <div class="mc-panel max-w-xl w-full p-5 sm:p-6 relative max-h-[92vh] overflow-y-auto">
+            <button onclick="closeQuizModal()" class="absolute top-3 right-3 w-8 h-8 mc-btn mc-btn-red text-white font-bold flex items-center justify-center">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+
+            <div class="flex items-center gap-2.5 mb-2 pr-8">
+                <span class="text-2xl">📝</span>
+                <div>
+                    <span class="pixel-font text-[9px] text-rose-900 bg-rose-200 border border-rose-500 px-2 py-0.5 rounded">PRUEBA 2° BÁSICO</span>
+                    <h2 class="pixel-font text-xs sm:text-sm font-extrabold text-slate-900 mt-1">Preguntas Tipo Prueba</h2>
+                </div>
+            </div>
+
+            <!-- Selector de Asignatura -->
+            <div class="flex flex-wrap gap-1.5 mb-3">
+                <button onclick="switchQuizSubject('historia')" id="tab-quiz-historia" class="mc-btn mc-btn-gold pixel-font text-[9px] px-2.5 py-1.5 rounded">🏺 HISTORIA</button>
+                <button onclick="switchQuizSubject('ciencias')" id="tab-quiz-ciencias" class="mc-btn pixel-font text-[9px] px-2.5 py-1.5 rounded">🔬 CIENCIAS</button>
+                <button onclick="switchQuizSubject('lenguaje')" id="tab-quiz-lenguaje" class="mc-btn pixel-font text-[9px] px-2.5 py-1.5 rounded">📚 LENGUAJE</button>
+                <button onclick="switchQuizSubject('matematicas')" id="tab-quiz-matematicas" class="mc-btn pixel-font text-[9px] px-2.5 py-1.5 rounded">🔢 MATEMÁTICAS</button>
+            </div>
+
+            <div id="quiz-container" class="mc-parchment p-4 rounded mb-3 border-2 border-stone-600">
+                <div class="flex items-center justify-between text-xs font-bold text-slate-700 mb-2">
+                    <span id="quiz-progress" class="pixel-font text-[9px]">Pregunta 1</span>
+                    <button onclick="speakQuizQuestion()" class="text-sky-700 hover:underline flex items-center gap-1 font-bold">
+                        <i class="fa-solid fa-volume-high"></i> Escuchar
+                    </button>
+                </div>
+                <p id="quiz-question" class="text-sm sm:text-base font-extrabold text-slate-900 mb-4 leading-relaxed"></p>
+                <div id="quiz-options" class="flex flex-col gap-2"></div>
+                <div id="quiz-feedback" class="hidden mt-3 p-3 rounded text-xs sm:text-sm font-bold"></div>
+            </div>
+
+            <div class="flex justify-between items-center">
+                <span id="quiz-score-label" class="pixel-font text-[10px] text-amber-950 font-extrabold">Puntaje: 0 correctas</span>
+                <button onclick="nextQuizQuestion()" class="mc-btn mc-btn-gold pixel-font text-[10px] px-4 py-2 rounded">
+                    SIGUIENTE <i class="fa-solid fa-forward ml-1"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- =================================================================== -->
+    <!-- MODAL 5: CUADERNOS DE ESTUDIO INTERACTIVOS                          -->
+    <!-- =================================================================== -->
+    <div id="notebook-modal" class="mc-dialog-overlay hidden">
+        <div class="mc-panel max-w-4xl w-full p-5 sm:p-6 relative max-h-[92vh] overflow-y-auto">
+            <button onclick="closeNotebookModal()" class="absolute top-3 right-3 w-8 h-8 mc-btn mc-btn-red text-white font-bold flex items-center justify-center">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+
+            <h2 class="pixel-font text-xs sm:text-sm font-extrabold text-amber-950 mb-3 flex items-center gap-2 pr-8">
+                <span>📖</span> <span>CUADERNOS DE ESTUDIO DE 2° BÁSICO</span>
+            </h2>
+
+            <!-- Pestañas de Asignaturas -->
+            <div class="flex flex-wrap gap-2 mb-4 border-b-2 border-stone-500 pb-3">
+                <button onclick="showNotebookTab('historia')" id="nb-tab-historia" class="mc-btn mc-btn-gold pixel-font text-[10px] px-3 py-1.5 rounded flex items-center gap-1.5">
+                    <span>🏺</span> <span>1. Historia</span>
+                </button>
+                <button onclick="showNotebookTab('ciencias')" id="nb-tab-ciencias" class="mc-btn pixel-font text-[10px] px-3 py-1.5 rounded flex items-center gap-1.5">
+                    <span>🔬</span> <span>2. Ciencias</span>
+                </button>
+                <button onclick="showNotebookTab('lenguaje')" id="nb-tab-lenguaje" class="mc-btn pixel-font text-[10px] px-3 py-1.5 rounded flex items-center gap-1.5">
+                    <span>📚</span> <span>3. Lenguaje</span>
+                </button>
+                <button onclick="showNotebookTab('matematicas')" id="nb-tab-matematicas" class="mc-btn pixel-font text-[10px] px-3 py-1.5 rounded flex items-center gap-1.5">
+                    <span>🔢</span> <span>4. Matemáticas</span>
+                </button>
+            </div>
+
+            <!-- CONTENIDO 1: HISTORIA -->
+            <div id="nb-content-historia" class="space-y-3 text-xs sm:text-sm">
+                <div class="flex flex-wrap items-center justify-between gap-2 mc-parchment p-3 rounded">
+                    <span class="font-bold text-amber-950">🏺 Resumen: Pueblos Originarios de Chile</span>
+                    <button onclick="speakNotebookSummary('historia')" class="mc-btn mc-btn-blue text-[11px] font-bold px-3 py-1 rounded flex items-center gap-1">
+                        <i class="fa-solid fa-volume-high"></i> Escuchar
+                    </button>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    <div class="mc-parchment p-3 rounded">
+                        <h3 class="pixel-font text-[10px] text-sky-900 font-extrabold mb-1">🛶 PUEBLOS NÓMADAS</h3>
+                        <p class="text-slate-800 mb-1">Se trasladaban de un lugar a otro buscando comida mediante <strong>caza, pesca y recolección</strong>.</p>
+                        <p class="font-bold text-sky-900">Ejemplos: Changos, Chonos, Kawésqar, Yaganes y Selk'nam.</p>
+                    </div>
+                    <div class="mc-parchment p-3 rounded">
+                        <h3 class="pixel-font text-[10px] text-emerald-900 font-extrabold mb-1">🏠 PUEBLOS SEDENTARIOS</h3>
+                        <p class="text-slate-800 mb-1">Vivían en un lugar fijo practicando <strong>agricultura, ganadería, alfarería y tejidos</strong>.</p>
+                        <p class="font-bold text-emerald-900">Ejemplos: Aymaras, Lickanantay, Diaguitas y Mapuches.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- CONTENIDO 2: CIENCIAS -->
+            <div id="nb-content-ciencias" class="hidden space-y-3 text-xs sm:text-sm">
+                <div class="flex flex-wrap items-center justify-between gap-2 mc-parchment p-3 rounded">
+                    <span class="font-bold text-emerald-950">🔬 Resumen: Cuerpo Humano, Animales y el Agua</span>
+                    <button onclick="speakNotebookSummary('ciencias')" class="mc-btn mc-btn-blue text-[11px] font-bold px-3 py-1 rounded flex items-center gap-1">
+                        <i class="fa-solid fa-volume-high"></i> Escuchar
+                    </button>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                    <div class="mc-parchment p-3 rounded">
+                        <h3 class="pixel-font text-[10px] text-rose-900 font-extrabold mb-1">❤️ CUERPO HUMANO</h3>
+                        <p class="text-slate-800">• <strong>Corazón:</strong> Bombea sangre 70 veces por minuto.<br>• <strong>Esqueleto:</strong> Sostiene el cuerpo.<br>• <strong>Ejercicio:</strong> 60 minutos al día.</p>
+                    </div>
+                    <div class="mc-parchment p-3 rounded">
+                        <h3 class="pixel-font text-[10px] text-emerald-900 font-extrabold mb-1">🐸 ANIMALES</h3>
+                        <p class="text-slate-800">• <strong>Vertebrados:</strong> Con columna vertebral.<br>• <strong>Invertebrados:</strong> Sin huesos (Insectos 6 patas, Arácnidos 8 patas).</p>
+                    </div>
+                    <div class="mc-parchment p-3 rounded">
+                        <h3 class="pixel-font text-[10px] text-sky-900 font-extrabold mb-1">💧 EL AGUA</h3>
+                        <p class="text-slate-800">• Escurre y se adapta al recipiente.<br>• Disuelve azúcar y sal.<br>• Con calor se evapora y con frío se congela.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- CONTENIDO 3: LENGUAJE -->
+            <div id="nb-content-lenguaje" class="hidden space-y-3 text-xs sm:text-sm">
+                <div class="flex flex-wrap items-center justify-between gap-2 mc-parchment p-3 rounded">
+                    <span class="font-bold text-fuchsia-950">📚 Resumen: El Cómic, Localizar Información y Palabras</span>
+                    <button onclick="speakNotebookSummary('lenguaje')" class="mc-btn mc-btn-blue text-[11px] font-bold px-3 py-1 rounded flex items-center gap-1">
+                        <i class="fa-solid fa-volume-high"></i> Escuchar
+                    </button>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    <div class="mc-parchment p-3 rounded">
+                        <h3 class="pixel-font text-[10px] text-fuchsia-900 font-extrabold mb-1">💬 EL CÓMIC</h3>
+                        <p class="text-slate-800">Texto Literario que narra una historia en viñetas con globos de diálogo, globos de pensamiento y onomatopeyas.</p>
+                    </div>
+                    <div class="mc-parchment p-3 rounded">
+                        <h3 class="pixel-font text-[10px] text-purple-900 font-extrabold mb-1">🔍 INFORMACIÓN EXPLÍCITA</h3>
+                        <p class="text-slate-800">4 Pasos: 1° Leer el texto, 2° Leer la pregunta, 3° Buscar y subrayar en el texto, 4° Responder.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- CONTENIDO 4: MATEMÁTICAS -->
+            <div id="nb-content-matematicas" class="hidden space-y-3 text-xs sm:text-sm">
+                <div class="flex flex-wrap items-center justify-between gap-2 mc-parchment p-3 rounded">
+                    <span class="font-bold text-sky-950">🔢 Resumen: Decenas, Operaciones y Cuerpos 3D</span>
+                    <button onclick="speakNotebookSummary('matematicas')" class="mc-btn mc-btn-blue text-[11px] font-bold px-3 py-1 rounded flex items-center gap-1">
+                        <i class="fa-solid fa-volume-high"></i> Escuchar
+                    </button>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    <div class="mc-parchment p-3 rounded">
+                        <h3 class="pixel-font text-[10px] text-sky-900 font-extrabold mb-1">🔟 DECENAS Y UNIDADES</h3>
+                        <p class="text-slate-800">1 Decena = 10 Unidades. Conteo de 2 en 2, de 5 en 5 y de 10 en 10 para sumar rápido.</p>
+                    </div>
+                    <div class="mc-parchment p-3 rounded">
+                        <h3 class="pixel-font text-[10px] text-orange-900 font-extrabold mb-1">📦 CUERPOS EN 3D</h3>
+                        <p class="text-slate-800">El Cubo tiene 6 caras cuadradas idénticas, 8 vértices y 12 aristas.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts Modulares -->
+    <script src="js/content.js"></script>
+    <script src="js/audio.js"></script>
+    <script src="js/engine3d.js"></script>
+    <script src="js/minigames.js"></script>
+    <script src="js/ui.js"></script>
+    <script src="js/main.js"></script>
+</body>
+</html>

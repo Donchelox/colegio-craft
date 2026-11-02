@@ -1,0 +1,12 @@
+{
+  "name": "colegiocraft-3d",
+  "version": "2.0.0",
+  "description": "ColegioCraft 3D: Mundos de Aprendizaje de 2° Básico estilo Minecraft Retro con gráficos voxel Crossy Road",
+  "scripts": {
+    "start": "python3 -m http.server 8080",
+    "dev": "python3 -m http.server 8080"
+  },
+  "keywords": ["minecraft", "threejs", "voxel", "education", "chile", "colegio"],
+  "author": "",
+  "license": "MIT"
+}
