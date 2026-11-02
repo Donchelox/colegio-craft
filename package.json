@@ -1,12 +1,31 @@
 {
   "name": "colegiocraft-3d",
   "version": "2.0.0",
+  "type": "module",
   "description": "ColegioCraft 3D: Mundos de Aprendizaje de 2° Básico estilo Minecraft Retro con gráficos voxel Crossy Road",
   "scripts": {
-    "start": "python3 -m http.server 8080",
-    "dev": "python3 -m http.server 8080"
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
   },
-  "keywords": ["minecraft", "threejs", "voxel", "education", "chile", "colegio"],
+  "keywords": [
+    "minecraft",
+    "threejs",
+    "voxel",
+    "education",
+    "chile",
+    "colegio"
+  ],
   "author": "",
-  "license": "MIT"
+  "license": "MIT",
+  "dependencies": {
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1",
+    "three": "^0.187.0",
+    "tone": "^15.1.22"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "^6.2.1",
+    "vite": "^8.3.5"
+  }
 }

@@ -7,8 +7,9 @@
 ehthumbs.db
 Thumbs.db
 
-# Dependencies
+# Dependencies & build
 node_modules/
+dist/
 
 # Logs & scratch
 *.log

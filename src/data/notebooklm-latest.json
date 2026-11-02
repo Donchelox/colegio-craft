@@ -1,0 +1,36 @@
+{
+  "subject": "historia",
+  "title": "Libro de Historia y Geografía 2° Básico - NotebookLM",
+  "syncedAt": "2026-11-02T20:00:00.000Z",
+  "stations": [
+    {
+      "id": "nlm_rapa_nui",
+      "name": "Pueblo Rapa Nui (Isla de Pascua)",
+      "emoji": "🗿",
+      "zone": "TERRITORIO INSULAR • POLINESIA",
+      "badge": "SEDENTARIO INSULAR",
+      "pos": { "x": 0, "y": 0, "z": -28 },
+      "color": 15887622,
+      "story": "¡Iorana! Habitamos la hermosa Isla de Pascua (Rapa Nui) en el Océano Pacífico. Fuimos grandes navegantes de la Polinesia y maestros talladores de piedra.",
+      "house": "Vivían en casas-bote llamadas Hare Paenga y cultivaban camote, plátanos y caña de azúcar.",
+      "food": "Pescaban atún con anzuelos de hueso y recolectaban productos del mar.",
+      "skill": "Tallamos los gigantescos MOÁIS en piedra volcánica en el volcán Rano Raraku.",
+      "question": "¿Cómo se llaman las gigantescas esculturas de piedra volcánica construidas por el pueblo Rapa Nui?",
+      "options": [
+        { "text": "A) Moáis", "correct": true },
+        { "text": "B) Pirámides", "correct": false },
+        { "text": "C) Rukas", "correct": false }
+      ]
+    }
+  ],
+  "questions": [
+    {
+      "question": "¿En qué volcán de la Isla de Pascua se tallaban los Moáis?",
+      "options": [
+        { "text": "En la cantera del volcán Rano Raraku.", "correct": true },
+        { "text": "En el fondo del mar.", "correct": false },
+        { "text": "En la cordillera de los Andes.", "correct": false }
+      ]
+    }
+  ]
+}
